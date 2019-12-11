@@ -10,10 +10,12 @@
   "scripts": {
     "test": "jest ./test",
     "lint": "eslint src/**/*.{js,jsx} --fix",
-    "dev": "cross-env NODE_ENV=development webpack-dev-server",
-    "start": "npm run dev",
+    "dev": "cross-env NODE_ENV=development webpack-dev-server",//"start": "npm run dev",
+    
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "start": "node server.js", // serves the application
+    "heroku-postbuild": "webpack -p"
   },
   "husky": {
     "hooks": {
