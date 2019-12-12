@@ -14,7 +14,7 @@
     "heroku-prebuild": "npm install --dev",
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules",
     "precommit": "lint-staged",
-    "start": "npm run build",
+    "start": "node server.js",
     "heroku-postbuild": "webpack -p"
   },
   "husky": {
