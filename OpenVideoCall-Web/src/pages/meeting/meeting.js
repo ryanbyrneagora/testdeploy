@@ -37,22 +37,38 @@ const shareLog = logger.init("share", "yellow");
 const localLog = logger.init("local", "green");
 
 const optionsInit = () => {
+
   let options = {
-    videoProfile: Cookies.get("videoProfile").split(",")[0] || "480p_4",
-    videoProfileLow: Cookies.get("videoProfileLow"),
+    videoProfile: Cookies.get("videoProfile") || "480p_4",
+    videoProfileLow: Cookies.get("videoProfileLow") || "120p,120p_1",
     cameraId: Cookies.get("cameraId"),
     microphoneId: Cookies.get("microphoneId"),
     channel: Cookies.get("channel") || "test",
     transcode: Cookies.get("transcode") || "interop",
-    attendeeMode: Cookies.get("attendeeMode") || "video",
+    attendeeMode: Cookies.get("attendeeMode") || "empty",
     baseMode: Cookies.get("baseMode") || "avc",
     displayMode: 1, // 0 Tile, 1 PIP, 2 screen share
     uid: undefined, // In default it is dynamically generated
     resolution: undefined
   };
 
+  if(options.videoProfile != '480p_4')
+  {
+    options.videoProfile = Cookies.get("videoProfile").split(",")[0];
+  }
+
+  if(options.attendeeMode === 'empty')
+  {
+    options.attendeeMode = 'audience';
+  }
+
   let tempProfile = RESOLUTION_ARR[Cookies.get("videoProfile")];
-  options.resolution = tempProfile[0] / tempProfile[1] || 4 / 3;
+
+  if (tempProfile === undefined) {
+    options.resolution = 4 / 3;
+  } else {
+    options.resolution = tempProfile[0] / tempProfile[1] || 4 / 3;
+  }
 
   options.key = APP_ID;
   options.token = Token;
@@ -100,7 +116,7 @@ const clientInit = (client, options) => {
       client.join(
         options.token,
         options.channel,
-        1,
+        0,
         uid => {
           log(uid, "brown", `User ${uid} join channel successfully`);
           log(uid, "brown", new Date().toLocaleTimeString());
@@ -312,7 +328,9 @@ const setHighStream = (prev, next) => {
  * @param {*} streamList
  */
 const subscribeStreamEvents = () => {
-  client.on("stream-added", function(evt) {
+  localLog('subscribing to stream events');
+  client.on('stream-added', function(evt) {
+    localLog('stream added');
     let stream = evt.stream;
     let id = stream.getId();
     localLog("New stream added: " + id);
@@ -568,7 +586,7 @@ options = optionsInit();
 uiInit(options);
 // eslint-disable-next-line
 client = AgoraRTC.createClient({
-  mode: options.transcode
+  mode: 'live'
 });
 subscribeMouseEvents();
 subscribeStreamEvents();
@@ -580,10 +598,14 @@ clientInit(client, options).then(uid => {
         cameraId: options.cameraId,
         microphoneId: options.microphoneId
       };
-  localStream = streamInit(uid, options, config);
-
+      client.setClientRole('audience'); 
+      if(options.attendeeMode !== 'audience')
+      {
+  
+        client.setClientRole('host'); 
   // Enable dual stream
   if (options.attendeeMode !== "audience") {
+    localStream = streamInit(uid, options, config);
     // MainId default to be localStream's ID
     mainId = uid;
     mainStream = localStream;
@@ -591,6 +613,7 @@ clientInit(client, options).then(uid => {
   //enableDualStream();
   localStream.init(
     () => {
+      localLog('init call back');
       if (options.attendeeMode !== "audience") {
         addStream(localStream, true);
         client.publish(localStream, err => {
@@ -602,6 +625,7 @@ clientInit(client, options).then(uid => {
       localLog("getUserMedia failed", err);
     }
   );
+      }
 });
 
 if (DUAL_STREAM_DEBUG) {

@@ -123,6 +123,7 @@ const subscribeMouseEvent = () => {
       videoProfileLow: $("#videoProfileLow").val()
     };
     Object.entries(postData).map(item => {
+      //alert(item[0] + '+' + item[1]);
       return Cookies.set(item[0], item[1]);
     });
     window.location.href = "precall.html";
