@@ -598,11 +598,11 @@ clientInit(client, options).then(uid => {
         cameraId: options.cameraId,
         microphoneId: options.microphoneId
       };
-      client.setClientRole('audience'); 
+      client.setClientRole("audience"); 
       if(options.attendeeMode !== 'audience')
       {
   
-        client.setClientRole('host'); 
+        client.setClientRole("host"); 
   // Enable dual stream
   if (options.attendeeMode !== "audience") {
     localStream = streamInit(uid, options, config);
